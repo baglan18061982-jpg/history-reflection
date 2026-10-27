@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Форма рефлексии</title>
+    <style>
+        body { background: #0f172a; color: #fff; font-family: sans-serif; padding: 20px; }
+        .form-box { max-width: 400px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
+        input, textarea, button { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: #fff; box-sizing: border-box; }
+        button { background: #38bdf8; color: #0f172a; font-weight: bold; border: none; cursor: pointer; }
+        .emojis { display: flex; justify-content: space-between; font-size: 1.8rem; }
+        .emoji-opt { cursor: pointer; padding: 5px; border-radius: 8px; }
+        .emoji-opt.active { background: #38bdf8; }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+    <div class="form-box">
+        <h2>Отправить рефлексию</h2>
+        <input type="text" id="name" placeholder="Ваше имя / Школа">
+        <div class="emojis">
+            <span class="emoji-opt active" onclick="setEmoji('🚀', this)">🚀</span>
+            <span class="emoji-opt" onclick="setEmoji('💡', this)">💡</span>
+            <span class="emoji-opt" onclick="setEmoji('🔥', this)">🔥</span>
+            <span class="emoji-opt" onclick="setEmoji('🧠', this)">🧠</span>
+        </div>
+        <textarea id="text" rows="4" placeholder="Главный вывод от мастер-класса..." required></textarea>
+        <button onclick="sendData()">Опубликовать на доске</button>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            databaseURL: "https://YOUR-PROJECT-ID-default-rtdb.firebaseio.com/" // Вставьте тот же URL
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let selectedEmoji = '🚀';
+        function setEmoji(e, el) {
+            selectedEmoji = e;
+            document.querySelectorAll('.emoji-opt').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function sendData() {
+            const name = document.getElementById('name').value.trim() || 'Учитель';
+            const text = document.getElementById('text').value.trim();
+
+            if(!text) return alert('Введите текст отзыва!');
+
+            db.ref('reflections').push({
+                name: name,
+                emoji: selectedEmoji,
+                text: text,
+                timestamp: Date.now()
+            }).then(() => {
+                alert('Отправлено! Смотрите на большой экран.');
+                document.getElementById('text').value = '';
+            });
+        }
+    </script>
+</body>
+</html>
